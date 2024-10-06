@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/create-map.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: ghostwhite;
+    }
+
+    #map,
+    .controls {
+      max-width: 800px;
+      width: 100vw;
+    }
+
+    #map {
+      aspect-ratio: 4 / 3;
+    }
+
+    .controls {
+      background-color: gainsboro;
+      display: flex;
+      justify-content: space-evenly;
+      padding: 1em 0;
+    }
+
+    #sel {
+      min-width: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <div class="controls">
+    <div class="pin-add-controls">
+      <label>Geocode:</label>
+      <input id="adr" placeholder="Address" />
+      <input id="tags" placeholder="Tags(csv)" />
+      <button
+        onclick="myMap.geoCode(document.getElementById('adr').value, document.getElementById('tags').value)">Add</button>
+    </div>
+
+    <div class="sel-add-controls">
+      <label for="sel">Tag to show:</label>
+      <select id="sel" onchange="myMap.onSelectChange(this)">
+        <option value="">---</option>
+      </select>
+    </div>
+  </div>
+
+  <script>
+    const myMap = createMap();
+
+    // Eigenen Standort anzeigen
+    navigator.geolocation.getCurrentPosition((position) => {
+      myMap.addMarker(position.coords.latitude, position.coords.longitude, ['me']);
+      myMap.map.flyTo([position.coords.latitude, position.coords.longitude], 10);
+    });
+
+    async function getData() {
+      const url = "http://localhost:5000/data";
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+
+
+        json.forEach(location => {
+          const address = `${location.street}, ${location.zip} ${location.city}`;
+          const tags = `${location.tags}`;
+          myMap.geoCode(address, tags);
+        });
+
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+
+
+    window.onload = getData;
+
+  </script>
+</body>
+
+</html>
