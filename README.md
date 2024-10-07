@@ -1,2 +1,4 @@
 # api-praktikum
- Test
+Lösung zur Aufgabe:
+
+  pa-api-erstellen und nutzen
